@@ -14,4 +14,11 @@ impl ImageIO {
 
         Ok(rgba_img)
     }
+
+    pub fn load_multiple_rgba_images(paths: Vec<&str>) -> Result<Vec<RgbaImage>> {
+        paths
+            .iter()
+            .map(|path| ImageIO::load_rgba_image(path))
+            .collect()
+    }
 }

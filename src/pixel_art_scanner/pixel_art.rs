@@ -205,3 +205,32 @@ const RIGHT: i32 = 1;
 const TOP: i32 = -1;
 const BOTTOM: i32 = 1;
 const CENTER: i32 = 0;
+
+#[cfg(test)]
+mod tests {
+    use crate::{image_io::ImageIO, pixel_art_scanner::Config};
+
+    use super::PixelArt;
+
+    #[test]
+    fn test_search_in_image() {
+        let images = ImageIO::load_multiple_rgba_images(vec![
+            "assets/images/4_crewmates_adjacent_test.png",
+            "assets/images/4_crewmates_adjacent_test_2.png",
+            "assets/images/8_crewmates.png",
+            "assets/images/crewmate_with_borders.png",
+        ])
+        .unwrap();
+        let expected = [4, 4, 8, 1];
+
+        let target_image = ImageIO::load_rgba_image("assets/images/crewmate.png").unwrap();
+        let target_pixel_art = PixelArt::new(target_image, Config::new_default()).unwrap();
+
+        for (index, image) in images.iter().enumerate() {
+            let found_instances = target_pixel_art.search_in_image(image).len();
+            let expected_instances = expected[index];
+
+            assert_eq!(found_instances, expected_instances);
+        }
+    }
+}
