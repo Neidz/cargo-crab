@@ -1,16 +1,26 @@
-use image::{ Rgba};
+use std::time::Instant;
+
+use pixel_art_scanner::Config;
 
 use crate::{image_io::ImageIO, pixel_art_scanner::PixelArt};
 
-mod pixel_art_scanner;
 mod image_io;
+mod pixel_art_scanner;
 
 fn main() {
+    let start_time = Instant::now();
+
     let target_image = ImageIO::load_rgba_image("assets/images/crewmate.png").unwrap();
     let source_image = ImageIO::load_rgba_image("assets/images/final_2023_place.png").unwrap();
 
-    let searched_color = Rgba([0,0,0, 1]);
-    let searching_tolerance = 1;
+    let target_pixel_art = PixelArt::new(target_image, Config::new_default()).unwrap();
 
-    let target_pixel_art = PixelArt::new(target_image, &searched_color, searching_tolerance).unwrap();
+    println!(
+        "{:?}",
+        target_pixel_art.search_in_image(&source_image).len()
+    );
+
+    let end_time = Instant::now();
+    let elapsed_time = end_time - start_time;
+    println!("Elapsed time: {:.2?}", elapsed_time);
 }
