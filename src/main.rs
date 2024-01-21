@@ -1,7 +1,7 @@
-use std::time::Instant;
+use std::{path::PathBuf, time::Instant};
 
 use pixel_art_scanner::Config;
-use rplace_data_parser::Parser;
+use rplace_data_parser::{Parser, ParserConfig};
 
 use crate::{image_io::ImageIO, pixel_art_scanner::PixelArt};
 
@@ -32,7 +32,10 @@ fn test_scan_image() {
 }
 
 fn test_parser() {
-    let parser = Parser::new();
+    let paths = vec![PathBuf::from(
+        "assets/rplace_data_sample/2023_place_canvas_history-000000000000.csv",
+    )];
+    let parser = Parser::new(ParserConfig::new_default());
 
-    parser.parse();
+    parser.parse(&paths).unwrap();
 }
