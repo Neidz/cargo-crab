@@ -12,7 +12,8 @@ mod rplace_data_parser;
 fn main() {
     let start_time = Instant::now();
 
-    test_parser();
+    // test_parser();
+    test_scan_image();
 
     let end_time = Instant::now();
     let elapsed_time = end_time - start_time;
@@ -20,8 +21,10 @@ fn main() {
 }
 
 fn test_scan_image() {
-    let target_image = ImageIO::load_rgba_image("assets/images/crewmate.png").unwrap();
-    let source_image = ImageIO::load_rgba_image("assets/images/final_2023_place.png").unwrap();
+    let target_image =
+        ImageIO::load_rgb_image(&PathBuf::from("assets/images/crewmate.png")).unwrap();
+    let source_image =
+        ImageIO::load_rgb_image(&PathBuf::from("assets/images/final_2023_place.png")).unwrap();
 
     let target_pixel_art = PixelArt::new(target_image, Config::new_default()).unwrap();
 

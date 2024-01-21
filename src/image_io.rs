@@ -1,24 +1,24 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use image::{io::Reader as ImageReader, RgbaImage};
+use image::{io::Reader as ImageReader, RgbImage};
 
 pub struct ImageIO {}
 
 use anyhow::Result;
 
 impl ImageIO {
-    pub fn load_rgba_image(path: &str) -> Result<RgbaImage> {
-        let img = ImageReader::open(Path::new(path))?.decode()?;
+    pub fn load_rgb_image(path: &Path) -> Result<RgbImage> {
+        let img = ImageReader::open(path)?.decode()?;
 
-        let rgba_img: RgbaImage = img.to_rgba8();
+        let rgb_img: RgbImage = img.to_rgb8();
 
-        Ok(rgba_img)
+        Ok(rgb_img)
     }
 
-    pub fn load_multiple_rgba_images(paths: Vec<&str>) -> Result<Vec<RgbaImage>> {
+    pub fn load_multiple_rgb_images(paths: &[PathBuf]) -> Result<Vec<RgbImage>> {
         paths
             .iter()
-            .map(|path| ImageIO::load_rgba_image(path))
+            .map(|path| ImageIO::load_rgb_image(path))
             .collect()
     }
 }

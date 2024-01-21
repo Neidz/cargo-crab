@@ -1,11 +1,11 @@
-use image::Rgba;
+use image::Rgb;
 
 pub struct ColorUtils;
 
 impl ColorUtils {
-    pub fn equal_with_tolerance(color1: &Rgba<u8>, color2: &Rgba<u8>, tolerance: u8) -> bool {
-        let Rgba([r1, g1, b1, _]) = color1;
-        let Rgba([r2, g2, b2, _]) = color2;
+    pub fn equal_with_tolerance(color1: &Rgb<u8>, color2: &Rgb<u8>, tolerance: u8) -> bool {
+        let Rgb([r1, g1, b1]) = color1;
+        let Rgb([r2, g2, b2]) = color2;
 
         let diff_r = safe_abs(r1, r2);
         let diff_g = safe_abs(g1, g2);

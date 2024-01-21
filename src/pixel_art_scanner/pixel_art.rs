@@ -2,7 +2,7 @@ use core::fmt;
 use std::collections::HashSet;
 
 use anyhow::{anyhow, Result};
-use image::{Rgba, RgbaImage};
+use image::{Rgb, RgbImage};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use super::{color_utils::ColorUtils, config::Config};
@@ -32,7 +32,7 @@ impl fmt::Display for PixelArtError {
 impl std::error::Error for PixelArtError {}
 
 impl PixelArt {
-    pub fn new(image: RgbaImage, config: Config) -> Result<Self> {
+    pub fn new(image: RgbImage, config: Config) -> Result<Self> {
         let coordinates =
             PixelArt::get_coordinates(&image, &config.searched_color, &config.extracting_tolerance);
         let coordinates_of_adjacent_pixels =
@@ -50,8 +50,8 @@ impl PixelArt {
     }
 
     fn get_coordinates(
-        image: &RgbaImage,
-        searched_color: &Rgba<u8>,
+        image: &RgbImage,
+        searched_color: &Rgb<u8>,
         searching_tolerance: &u8,
     ) -> Vec<(u32, u32)> {
         let (img_width, img_height) = image.dimensions();
@@ -101,7 +101,7 @@ impl PixelArt {
         adjacent_coordinates.into_iter().collect()
     }
 
-    pub fn search_in_image(&self, searched_image: &RgbaImage) -> Vec<Vec<(u32, u32)>> {
+    pub fn search_in_image(&self, searched_image: &RgbImage) -> Vec<Vec<(u32, u32)>> {
         let (img_width, img_height) = searched_image.dimensions();
         let (window_width, window_height) = self.get_window_size();
 
@@ -123,7 +123,7 @@ impl PixelArt {
         &self,
         offset_x: u32,
         offset_y: u32,
-        searched_image: &RgbaImage,
+        searched_image: &RgbImage,
     ) -> Option<Vec<(u32, u32)>> {
         let coordinates_with_offset: Vec<(u32, u32)> = self
             .coordinates
@@ -208,22 +208,25 @@ const CENTER: i32 = 0;
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use crate::{image_io::ImageIO, pixel_art_scanner::Config};
 
     use super::PixelArt;
 
     #[test]
     fn test_search_in_image() {
-        let images = ImageIO::load_multiple_rgba_images(vec![
-            "assets/images/4_crewmates_adjacent_test.png",
-            "assets/images/4_crewmates_adjacent_test_2.png",
-            "assets/images/8_crewmates.png",
-            "assets/images/crewmate_with_borders.png",
+        let images = ImageIO::load_multiple_rgb_images(&vec![
+            PathBuf::from("assets/images/4_crewmates_adjacent_test.png"),
+            PathBuf::from("assets/images/4_crewmates_adjacent_test_2.png"),
+            PathBuf::from("assets/images/8_crewmates.png"),
+            PathBuf::from("assets/images/crewmate_with_borders.png"),
         ])
         .unwrap();
         let expected = [4, 4, 8, 1];
 
-        let target_image = ImageIO::load_rgba_image("assets/images/crewmate.png").unwrap();
+        let target_image =
+            ImageIO::load_rgb_image(&PathBuf::from("assets/images/crewmate.png")).unwrap();
         let target_pixel_art = PixelArt::new(target_image, Config::new_default()).unwrap();
 
         for (index, image) in images.iter().enumerate() {
