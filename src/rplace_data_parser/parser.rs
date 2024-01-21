@@ -17,7 +17,7 @@ impl Parser {
         for result in reader.deserialize() {
             let record: Record = result?;
 
-            println!("{:?}", record.timestamp);
+            println!("{:?}", record);
         }
 
         Ok(())
