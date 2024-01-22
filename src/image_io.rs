@@ -7,7 +7,7 @@ pub struct ImageIO {}
 use anyhow::Result;
 
 impl ImageIO {
-    pub fn load_rgb_image(path: &Path) -> Result<RgbImage> {
+    pub fn load_rgb_image(path: &PathBuf) -> Result<RgbImage> {
         let img = ImageReader::open(path)?.decode()?;
 
         let rgb_img: RgbImage = img.to_rgb8();

@@ -3,34 +3,27 @@ use std::path::PathBuf;
 use anyhow::Result;
 use chrono::NaiveDateTime;
 use csv::Reader;
-use image::RgbaImage;
 
 use super::{
     config::{OnError, ParserConfig},
+    parser_image::ParserImage,
     record::Record,
 };
 
-struct ImageExpansionOffset {
-    pub left: u32,
-    pub top: u32,
-}
-
 pub struct Parser {
     config: ParserConfig,
-    image: RgbaImage,
-    image_expansion_offset: ImageExpansionOffset,
+    parser_image: ParserImage,
 }
 
 impl Parser {
     pub fn new(config: ParserConfig) -> Parser {
         Parser {
             config,
-            image: RgbaImage::new(0, 0),
-            image_expansion_offset: ImageExpansionOffset { left: 0, top: 0 },
+            parser_image: ParserImage::new(),
         }
     }
 
-    pub fn parse(&self, paths: &Vec<PathBuf>) -> Result<()> {
+    pub fn parse(&self, paths: &[PathBuf]) -> Result<()> {
         let mut first_timestamp: Option<NaiveDateTime> = None;
         let mut last_action: u32 = 0;
 
@@ -50,7 +43,7 @@ impl Parser {
                     },
                 };
 
-                self.draw_pixel(&record);
+                self.parser_image.handle_record(&record);
 
                 match first_timestamp {
                     None => {
@@ -66,7 +59,7 @@ impl Parser {
 
                             last_action += elapsed_intervals * self.config.save_interval_seconds;
 
-                            self.save_image(elapsed_seconds);
+                            self.parser_image.save_image(elapsed_seconds);
                         }
                     }
                 };
@@ -75,10 +68,4 @@ impl Parser {
 
         Ok(())
     }
-
-    fn save_image(&self, seconds_passed: u32) {
-        println!("{:?}", seconds_passed);
-    }
-
-    fn draw_pixel(&self, record: &Record) {}
 }
