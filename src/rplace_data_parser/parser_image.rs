@@ -1,7 +1,10 @@
-use image::RgbImage;
+use std::{fs, path::Path};
+
+use image::{imageops, ImageBuffer, Rgb, RgbImage};
 
 use super::record::{Coordinate, Record};
 
+#[derive(Debug)]
 pub struct ImageExpansionOffset {
     left: i32,
     top: i32,
@@ -21,31 +24,74 @@ impl ParserImage {
     }
 
     pub fn save_image(&self, seconds_passed: u32) {
-        todo!()
+        let output_dir = Path::new("output");
+
+        if !output_dir.exists() {
+            fs::create_dir_all(output_dir).unwrap();
+        }
+
+        self.image
+            .save(format!("output/{:?}.png", seconds_passed))
+            .unwrap();
     }
 
-    pub fn handle_record(&self, record: &Record) {
-        self.draw_from_record(record);
+    pub fn handle_record(&mut self, record: &Record) {
         self.handle_image_expansion(&record.coordinate);
+        self.draw_from_record(record);
     }
 
-    fn draw_from_record(&self, record: &Record) {
+    fn draw_from_record(&mut self, record: &Record) {
+        let ImageExpansionOffset { left, top } = self.image_expansion_offset;
+        let offset_left = left;
+        let offset_top = top;
+
         match record.coordinate {
             Coordinate::Point { x, y } => {
-                todo!()
+                let x_with_offset = x + offset_left;
+                let y_with_offset = y + offset_top;
+
+                self.image.put_pixel(
+                    x_with_offset as u32,
+                    y_with_offset as u32,
+                    record.pixel_color,
+                );
             }
             Coordinate::Rectangle { x1, y1, x2, y2 } => {
-                todo!()
+                let x1_with_offset = x1 + offset_left;
+                let y1_with_offset = y1 + offset_top;
+                let x2_with_offset = x2 + offset_left;
+                let y2_with_offset = y2 + offset_top;
+
+                for y in y1_with_offset..=(y2_with_offset) {
+                    for x in x1_with_offset..=(x2_with_offset) {
+                        self.image.put_pixel(x as u32, y as u32, record.pixel_color);
+                    }
+                }
             }
             Coordinate::Circle { x, y, r } => {
-                todo!()
+                let x_with_offset = x + offset_left;
+                let y_with_offset = y + offset_top;
+                let r = r as i32;
+
+                for y in (x_with_offset - r)..=(x_with_offset + r) {
+                    for x in (y_with_offset - r)..=(y_with_offset + r) {
+                        let dx = x - x_with_offset;
+                        let dy = y - y_with_offset;
+                        if dx * dx + dy * dy <= r * r {
+                            self.image.put_pixel(x as u32, y as u32, record.pixel_color);
+                        }
+                    }
+                }
             }
         }
     }
 
-    fn handle_image_expansion(&self, coordinate: &Coordinate) {
+    fn handle_image_expansion(&mut self, coordinate: &Coordinate) {
         let (img_width, img_height) = self.image.dimensions();
         let (img_width, img_height) = (img_width as i32, img_height as i32);
+        let ImageExpansionOffset { left, top } = self.image_expansion_offset;
+        let offset_left = left;
+        let offset_top = top;
 
         let mut expand_left = 0;
         let mut expand_right = 0;
@@ -54,8 +100,8 @@ impl ParserImage {
 
         match coordinate {
             Coordinate::Point { x, y } => {
-                let x_with_offset = x + self.image_expansion_offset.left;
-                let y_with_offset = y + self.image_expansion_offset.top;
+                let x_with_offset = x + offset_left;
+                let y_with_offset = y + offset_top;
 
                 if x_with_offset < 0 {
                     expand_left = -x_with_offset;
@@ -71,11 +117,61 @@ impl ParserImage {
                 }
             }
             Coordinate::Rectangle { x1, y1, x2, y2 } => {
-                todo!()
+                let x1_with_offset = x1 + offset_left;
+                let y1_with_offset = y1 + offset_top;
+                let x2_with_offset = x2 + offset_left;
+                let y2_with_offset = y2 + offset_top;
+
+                if x1_with_offset < 0 {
+                    expand_left = -x1_with_offset;
+                }
+                if x2_with_offset >= img_width {
+                    expand_right = x2_with_offset - img_width + 1;
+                }
+                if y1_with_offset < 0 {
+                    expand_top = -y1_with_offset;
+                }
+                if y2_with_offset >= img_height {
+                    expand_bottom = y2_with_offset - img_height + 1;
+                }
             }
             Coordinate::Circle { x, y, r } => {
-                todo!()
+                let x_with_offset = x + offset_left;
+                let y_with_offset = y + offset_top;
+                let r = *r as i32;
+
+                if x_with_offset - r < 0 {
+                    expand_left = -x_with_offset + r;
+                }
+                if x_with_offset + r >= img_width {
+                    expand_right = x_with_offset + r - img_width + 1;
+                }
+                if y_with_offset - r < 0 {
+                    expand_top = -y_with_offset + r;
+                }
+                if y_with_offset + r >= img_height {
+                    expand_bottom = y_with_offset + r - img_height + 1;
+                }
             }
+        };
+
+        if expand_left != 0 || expand_right != 0 || expand_top != 0 || expand_bottom != 0 {
+            let new_height = img_height + expand_top + expand_bottom;
+            let new_width = img_width + expand_left + expand_right;
+
+            let mut new_image =
+                ImageBuffer::from_pixel(new_width as u32, new_height as u32, Rgb([255, 255, 255]));
+
+            imageops::overlay(
+                &mut new_image,
+                &self.image,
+                expand_left.into(),
+                expand_top.into(),
+            );
+
+            self.image = new_image;
+            self.image_expansion_offset.left += expand_left;
+            self.image_expansion_offset.top += expand_top;
         }
     }
 }

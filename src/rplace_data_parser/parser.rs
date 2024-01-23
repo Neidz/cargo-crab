@@ -23,7 +23,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(&self, paths: &[PathBuf]) -> Result<()> {
+    pub fn parse(&mut self, paths: &[PathBuf]) -> Result<()> {
         let mut first_timestamp: Option<NaiveDateTime> = None;
         let mut last_action: u32 = 0;
 
@@ -53,7 +53,7 @@ impl Parser {
                         let elapsed_time = record.timestamp - first_timestamp;
                         let elapsed_seconds = elapsed_time.num_seconds() as u32;
 
-                        if elapsed_seconds > (last_action + self.config.save_interval_seconds) {
+                        if elapsed_seconds >= (last_action + self.config.save_interval_seconds) {
                             let elapsed_intervals =
                                 (elapsed_seconds - last_action) / self.config.save_interval_seconds;
 

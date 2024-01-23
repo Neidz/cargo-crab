@@ -1,6 +1,6 @@
 use anyhow::Result;
 use chrono::NaiveDateTime;
-use image::Rgba;
+use image::Rgb;
 use serde::{Deserialize, Deserializer};
 
 #[derive(Debug)]
@@ -18,7 +18,7 @@ pub struct Record {
     #[serde(deserialize_with = "deserialize_coordinate")]
     pub coordinate: Coordinate,
     #[serde(deserialize_with = "deserialize_color")]
-    pub pixel_color: Rgba<u8>,
+    pub pixel_color: Rgb<u8>,
 }
 
 fn deserialize_timestamp<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
@@ -36,7 +36,12 @@ where
 {
     let s = String::deserialize(deserializer)?;
 
-    let numbers: Vec<&str> = s.split(',').collect();
+    let filtered_s: String = s
+        .chars()
+        .filter(|&c| c.is_digit(10) || c == ',' || c == '-')
+        .collect();
+
+    let numbers: Vec<&str> = filtered_s.split(',').collect();
 
     match numbers.len() {
         2 => {
@@ -85,7 +90,7 @@ where
     }
 }
 
-fn deserialize_color<'de, D>(deserializer: D) -> Result<Rgba<u8>, D::Error>
+fn deserialize_color<'de, D>(deserializer: D) -> Result<Rgb<u8>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -95,5 +100,5 @@ where
     let g = u8::from_str_radix(&s[3..5], 16).map_err(serde::de::Error::custom)?;
     let b = u8::from_str_radix(&s[5..7], 16).map_err(serde::de::Error::custom)?;
 
-    Ok(Rgba([r, g, b, 255]))
+    Ok(Rgb([r, g, b]))
 }

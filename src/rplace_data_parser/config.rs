@@ -31,7 +31,7 @@ impl ParserConfig {
             verbose: true,
             output_dir: String::from("output_images"),
             on_error: OnError::Print,
-            save_interval_seconds: 600,
+            save_interval_seconds: 86400,
         }
     }
 }

@@ -12,8 +12,8 @@ mod rplace_data_parser;
 fn main() {
     let start_time = Instant::now();
 
-    // test_parser();
-    test_scan_image();
+    test_parser();
+    // test_scan_image();
 
     let end_time = Instant::now();
     let elapsed_time = end_time - start_time;
@@ -35,10 +35,14 @@ fn test_scan_image() {
 }
 
 fn test_parser() {
-    let paths = vec![PathBuf::from(
-        "assets/rplace_data_sample/2023_place_canvas_history-000000000000.csv",
-    )];
-    let parser = Parser::new(ParserConfig::new_default());
+    let mut paths = Vec::new();
+
+    for i in 0..=52 {
+        let filename = format!("assets/rplace_data/2023_place_canvas_history-{:012}.csv", i);
+        paths.push(PathBuf::from(filename));
+    }
+
+    let mut parser = Parser::new(ParserConfig::new_default());
 
     parser.parse(&paths).unwrap();
 }
