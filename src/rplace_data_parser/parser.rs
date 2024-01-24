@@ -59,7 +59,8 @@ impl Parser {
 
                             last_action += elapsed_intervals * self.config.save_interval_seconds;
 
-                            self.parser_image.save_image(elapsed_seconds);
+                            self.parser_image
+                                .save_image(&self.config.output_dir, elapsed_seconds);
                         }
                     }
                 };

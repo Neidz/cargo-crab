@@ -2,7 +2,7 @@ use core::fmt;
 use std::collections::HashSet;
 
 use anyhow::{anyhow, Result};
-use image::{Rgb, RgbImage};
+use image::{ImageBuffer, Rgb, RgbImage};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use super::{color_utils::ColorUtils, config::Config};
@@ -186,6 +186,25 @@ impl PixelArt {
             }
         }
         (highest_x + 1, highest_y + 1)
+    }
+
+    pub fn visualize_pixel_arts(
+        original_image: &RgbImage,
+        pixel_art_instances: &Vec<Vec<(u32, u32)>>,
+        pixel_art_color: &Rgb<u8>,
+        background_color: &Rgb<u8>,
+    ) -> RgbImage {
+        let (img_width, img_height) = original_image.dimensions();
+
+        let mut visualization = ImageBuffer::from_pixel(img_width, img_height, *background_color);
+
+        for instance in pixel_art_instances {
+            for &(x, y) in instance {
+                visualization.put_pixel(x, y, *pixel_art_color)
+            }
+        }
+
+        visualization
     }
 }
 

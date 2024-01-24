@@ -29,9 +29,9 @@ impl ParserConfig {
     pub fn new_default() -> ParserConfig {
         ParserConfig {
             verbose: true,
-            output_dir: String::from("output_images"),
+            output_dir: String::from("output/output_images"),
             on_error: OnError::Print,
-            save_interval_seconds: 86400,
+            save_interval_seconds: 10000,
         }
     }
 }

@@ -1,6 +1,6 @@
-use std::{fs, path::Path};
-
 use image::{imageops, ImageBuffer, Rgb, RgbImage};
+
+use crate::image_io::ImageIO;
 
 use super::record::{Coordinate, Record};
 
@@ -23,16 +23,8 @@ impl ParserImage {
         }
     }
 
-    pub fn save_image(&self, seconds_passed: u32) {
-        let output_dir = Path::new("output");
-
-        if !output_dir.exists() {
-            fs::create_dir_all(output_dir).unwrap();
-        }
-
-        self.image
-            .save(format!("output/{:?}.png", seconds_passed))
-            .unwrap();
+    pub fn save_image(&self, output_dir: &str, seconds_passed: u32) {
+        ImageIO::save_image(&self.image, output_dir, &seconds_passed.to_string(), ".png").unwrap()
     }
 
     pub fn handle_record(&mut self, record: &Record) {
